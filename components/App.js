@@ -16,19 +16,30 @@ App = React.createClass({
       GIPHY_PUB_KEY +
       "&tag=" +
       searchingText;
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", url);
-    xhr.onload = function() {
-      if (xhr.status === 200) {
-        var data = JSON.parse(xhr.responseText).data;
+    function connect(url) {
+      return new Promise((resolve, reject) => {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url);
+        xhr.onload = function() {
+          if (xhr.status === 200) {
+            var data = JSON.parse(xhr.responseText).data;
+            resolve(data);
+          } else {
+            reject(new Error(xhr.statusText));
+          }
+        };
+        xhr.send();
+      });
+    }
+    connect(url)
+      .then(data => {
         var gif = {
           url: data.fixed_width_downsampled_url,
           sourceUrl: data.url
         };
         callback(gif);
-      }
-    };
-    xhr.send();
+      })
+      .catch(err => console.log(err));
   },
   handleSearch(searchingText) {
     this.setState({ loading: true });
